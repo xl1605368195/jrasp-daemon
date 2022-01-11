@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"jrasp-daemon/common"
-	"jrasp-daemon/log"
+	"jrasp-daemon/defs"
+	"jrasp-daemon/zlog"
 	"net/http"
 	"strings"
 )
@@ -23,38 +23,53 @@ type Response struct {
 	Message string `json:"message"`
 }
 
+func (jp *JavaProcess) ExitInjectImmediately() bool{
+	// 关闭注入
+	success := jp.ShutDownAgent()
+	if success {
+		// 标记为成功退出状态
+		jp.MarkExitInject()
+		zlog.Infof(defs.WATCH_DEFAULT, "java agent exit", "java pid:%d,status:%t", jp.JavaPid, success)
+	} else {
+		// 标记为异常退出状态
+		jp.MarkFailedExitInject()
+		zlog.Errorf(defs.WATCH_DEFAULT, "[BUG] java agent exit failed", "java pid:%d,status:%t", jp.JavaPid, success)
+	}
+	return success
+}
+
 // 关闭注入
-func (this *JavaProcess) ShutDownAgent() bool {
-	token, err := this.getToken()
+func (jp *JavaProcess) ShutDownAgent() bool {
+	token, err := jp.getToken()
 	if err != nil {
-		log.Errorf(common.HTTP_TOKEN, "shut down agent", "get http token err:%v", err)
+		zlog.Errorf(defs.HTTP_TOKEN, "shut down agent", "get http token err:%v", err)
 		return false
 	}
-	resp, err := HttpGet(this.httpClient, fmt.Sprintf(shutdownUrl, this.ServerIp, this.ServerPort), "", token.Data)
+	resp, err := HttpGet(jp.httpClient, fmt.Sprintf(shutdownUrl, jp.ServerIp, jp.ServerPort), "", token.Data)
 	if err != nil {
-		log.Errorf(common.HTTP_TOKEN, "shut down agent", "send shutdown request error:%v", err)
+		zlog.Errorf(defs.HTTP_TOKEN, "shut down agent", "send shutdown request error:%v", err)
 		return false
 	}
 	if resp.Code != 200 {
-		log.Errorf(common.HTTP_TOKEN, "shut down agent", "send shutdown request error,resp.Code=%d", resp.Code)
+		zlog.Errorf(defs.HTTP_TOKEN, "shut down agent", "send shutdown request error,resp.Code=%d", resp.Code)
 		return false
 	}
 	return true
 }
 
 // 降级冻结
-func (this *JavaProcess) DegradeAgent() bool {
-	token, err := this.getToken()
+func (jp *JavaProcess) DegradeAgent() bool {
+	token, _ := jp.getToken()
 	// 查询所有模块  listUrl
-	resp, err := HttpGet(this.httpClient, fmt.Sprintf(listUrl, this.ServerIp, this.ServerPort), "", token.Data)
+	resp, err := HttpGet(jp.httpClient, fmt.Sprintf(listUrl, jp.ServerIp, jp.ServerPort), "", token.Data)
 	if err != nil {
-		log.Errorf(common.HTTP_TOKEN, "degrade agent", "send list request error:%v", err)
+		zlog.Errorf(defs.HTTP_TOKEN, "degrade agent", "send list request error:%v", err)
 		return false
 	}
 	var moduleInfoList []ModuleInfo
 	err = json.Unmarshal([]byte(resp.Data), &moduleInfoList)
 	if err != nil {
-		log.Errorf(common.HTTP_TOKEN, "get module list", "error:%v", err)
+		zlog.Errorf(defs.HTTP_TOKEN, "get module list", "error:%v", err)
 		return false
 	}
 	var ids []string
@@ -66,13 +81,13 @@ func (this *JavaProcess) DegradeAgent() bool {
 	// 有激活的模块
 	if len(ids) > 0 {
 		var params = fmt.Sprintf(`ids=%s`, strings.Join(ids, ","))
-		resp, err := HttpGet(this.httpClient, fmt.Sprintf(degradeUrl, this.ServerIp, this.ServerPort), params, token.Data)
+		resp, err := HttpGet(jp.httpClient, fmt.Sprintf(degradeUrl, jp.ServerIp, jp.ServerPort), params, token.Data)
 		if err != nil {
-			log.Errorf(common.HTTP_TOKEN, "degrade agent", "send degrade request error:%v", err)
+			zlog.Errorf(defs.HTTP_TOKEN, "degrade agent", "send degrade request error:%v", err)
 			return false
 		}
 		if resp.Code != 200 {
-			log.Errorf(common.HTTP_TOKEN, "degrade agent", "send degrade request error,resp.Code=%d", resp.Code)
+			zlog.Errorf(defs.HTTP_TOKEN, "degrade agent", "send degrade request error,resp.Code=%d", resp.Code)
 			return false
 		}
 	}
@@ -80,9 +95,9 @@ func (this *JavaProcess) DegradeAgent() bool {
 }
 
 // 获取token
-func (this *JavaProcess) getToken() (*Response, error) {
-	var params = fmt.Sprintf(`username=%s&password=%s`, this.cfg.Username, this.cfg.Password)
-	return HttpPost(this.httpClient, fmt.Sprintf(loginUrl, this.ServerIp, this.ServerPort), params, "")
+func (jp *JavaProcess) getToken() (*Response, error) {
+	var params = fmt.Sprintf(`username=%s&password=%s`, jp.cfg.Username, jp.cfg.Password)
+	return HttpPost(jp.httpClient, fmt.Sprintf(loginUrl, jp.ServerIp, jp.ServerPort), params, "")
 }
 
 // GET 请求

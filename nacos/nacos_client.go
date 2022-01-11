@@ -2,10 +2,10 @@ package nacos
 
 import (
 	"io/ioutil"
-	"jrasp-daemon/cfg"
-	"jrasp-daemon/common"
+	"jrasp-daemon/defs"
 	"jrasp-daemon/environ"
-	"jrasp-daemon/log"
+	"jrasp-daemon/userconfig"
+	"jrasp-daemon/zlog"
 	"os"
 	"path/filepath"
 
@@ -14,17 +14,17 @@ import (
 	"github.com/nacos-group/nacos-sdk-go/vo"
 )
 
-func NacosInit(cfg *cfg.Config, env *environ.Environ) {
+func NacosInit(cfg *userconfig.Config, env *environ.Environ) {
 
 	clientConfig := constant.ClientConfig{
 		NamespaceId:         cfg.NamespaceId,
 		TimeoutMs:           5000,
 		NotLoadCacheAtStart: true,
-		LogDir:              "../logs",
-		CacheDir:            "../logs/cache",
+		LogDir:              "/tmp/nacos/log",
+		CacheDir:            "/tmp/nacos/cache",
 		RotateTime:          "24h",
 		MaxAge:              3,
-		LogLevel:            "warn",
+		LogLevel:            "error",
 	}
 
 	var serverConfigs []constant.ServerConfig
@@ -55,12 +55,12 @@ func NacosInit(cfg *cfg.Config, env *environ.Environ) {
 		Enable:      true,
 		Healthy:     true,
 		Ephemeral:   true,
-		Metadata:    map[string]string{"raspVersion": common.JRASP_DAEMON_VERSION},
+		Metadata:    map[string]string{"raspVersion": defs.JRASP_DAEMON_VERSION},
 		ClusterName: "DEFAULT",       // 默认值DEFAULT
 		GroupName:   "DEFAULT_GROUP", // 默认值DEFAULT_GROUP
 	})
 	if err != nil {
-		log.Warnf(common.NACOS_INIT, "[registerStatus]", "registerStatus:%t,err:%v", registerStatus, err)
+		zlog.Warnf(defs.NACOS_INIT, "[registerStatus]", "registerStatus:%t,err:%v", registerStatus, err)
 	}
 
 	configClient, err := clients.NewConfigClient(
@@ -81,18 +81,18 @@ func NacosInit(cfg *cfg.Config, env *environ.Environ) {
 		DataId: dataId,
 		Group:  "DEFAULT_GROUP",
 		OnChange: func(namespace, group, dataId, data string) {
-			log.Infof(common.NACOS_LISTEN_CONFIG, "[ListenConfig]", "group:%s,dataId=%s,data=%s", group, dataId, data)
-			err = ioutil.WriteFile(filepath.Join(env.RaspHome, "cfg", "config.json"), []byte(data), 0600)
+			zlog.Infof(defs.NACOS_LISTEN_CONFIG, "[ListenConfig]", "group:%s,dataId=%s,data=%s", group, dataId, data)
+			err = ioutil.WriteFile(filepath.Join(env.InstallDir, "cfg", "config.yml"), []byte(data), 0600)
 			if err != nil {
-				log.Warnf(common.NACOS_LISTEN_CONFIG, "[ListenConfig]", "write file to config.json,err:%v", err)
+				zlog.Warnf(defs.NACOS_LISTEN_CONFIG, "[ListenConfig]", "write file to config.json,err:%v", err)
 			}
-			log.Infof(common.NACOS_LISTEN_CONFIG, "[ListenConfig]", "jrasp-daemon will exit...")
+			zlog.Infof(defs.NACOS_LISTEN_CONFIG, "[ListenConfig]", "jrasp-daemon will exit...")
 			os.Exit(0)
 		},
 	})
 
 	if err != nil {
-		log.Warnf(common.NACOS_INIT, "[ListenConfig]", "configClient.ListenConfig,err:%v", err)
+		zlog.Warnf(defs.NACOS_INIT, "[ListenConfig]", "configClient.ListenConfig,err:%v", err)
 	}
-	log.Infof(common.NACOS_INIT, "[NacosInit]", "nacos init success")
+	zlog.Infof(defs.NACOS_INIT, "[NacosInit]", "nacos init success")
 }

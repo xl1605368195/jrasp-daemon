@@ -3,8 +3,8 @@ package utils
 import (
 	"bufio"
 	"fmt"
-	"jrasp-daemon/common"
-	"jrasp-daemon/log"
+	"jrasp-daemon/defs"
+	"jrasp-daemon/zlog"
 	"os/exec"
 	"strings"
 )
@@ -15,12 +15,12 @@ func OpenFiles(pid int32, jarName string) bool {
 	//创建获取命令输出的管道
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
-		log.Warnf(common.UTILS_OpenFiles, "[OpenFiles]", "can not obtain stdout pipe for command:%v", err)
+		zlog.Warnf(defs.UTILS_OpenFiles, "[OpenFiles]", "can not obtain stdout pipe for command:%v", err)
 		return false
 	}
 	//执行命令
 	if err := cmd.Start(); err != nil {
-		log.Warnf(common.UTILS_OpenFiles, "[OpenFiles]", "cmd exec start err:%v", err)
+		zlog.Warnf(defs.UTILS_OpenFiles, "[OpenFiles]", "cmd exec start err:%v", err)
 		return false
 	}
 	//使用带缓冲的读取器

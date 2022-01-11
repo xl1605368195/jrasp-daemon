@@ -1,22 +1,28 @@
-package cfg
+package userconfig
 
 import (
 	"fmt"
-
 	"github.com/spf13/viper"
 )
 
+// AgentMode 运行模式
+type AgentMode string
+
+const (
+	MONITOR AgentMode = "monitor" // monitor模式
+	NORMAL  AgentMode = "normal"  // normal模式
+	DYNAMIC AgentMode = "dynamic" // dynamic模式
+	DISABLE AgentMode = "disable" // disbale模式
+)
+
 type Config struct {
-	// 开启 rasp 注入功能
-	EnableHook bool `json:"enableHook"`
-	// 允许 java_process 方式注入
-	EnableAttach bool `json:"enableAttach"`
+	// java agent 运行模式
+	AgentMode AgentMode `json:"agentMode"`
 
-	// 注入/退出时间
-	// 固定时间注入\退出
-	AttachTime int `json:"attachTime"` // 一天内的时间点中0~23选择一个点即可
+	// 激活激活时间如: 15:10
+	ActiveTime string `json:"activeTime"`
 
-	// 鉴权配置
+	// http token 鉴权配置
 	Namespace  string `json:"namespace"`
 	EnableAuth bool   `json:"enableAuth"`
 	Username   string `json:"username"`
@@ -26,7 +32,7 @@ type Config struct {
 	LogLevel int    `json:"logLevel"`
 	LogPath  string `json:"logPath"`
 
-	// 性能诊断
+	// 性能诊断配置
 	EnablePprof bool `json:"enablePprof"`
 	PprofPort   int  `json:"pprofPort"`
 
@@ -38,32 +44,24 @@ type Config struct {
 	HeartBeatReportTicker uint   `json:"heartBeatReportTicker"`
 
 	// 阻断相关参数的
-	EnableBlock bool `json:"enableBlock"` // 阻断总开关，关闭之后，各个模块都关闭阻断；开启之后，还需要开启模块对应的阻断参数；
+	EnableBlock bool `json:"enableBlock"` // 阻断总开关，关闭之后，各个模块都关闭阻断；开启之后，还需要开启模块对应的阻断参数
 	// 命令执行相关参数
 	EnableRceBlock bool     `json:"enableRceBlock"` // rce阻断配置
 	RceWhiteList   []string `json:"rceWhiteList"`   // rce命令执行白名单
-	// 特殊情况不允许注入条件
-	// 如果匹配了命令行信息，将不注入
-	CmdLineBlackList []string `json:"cmdLineBlackList"` // 进程的cmdlines中匹配,不注入
-
-	// 资源检测相关
-	EnableResourceCheck bool `json:"enableResourceCheck"` // 开启资源检测开关
 
 	// nacos 配置
-	NamespaceId string `json:"namespaceId"`
-	DataId      string `json:"dataId"` // 配置id
+	NamespaceId string `json:"namespaceId"` // 命名空间
+	DataId      string `json:"dataId"`      // 配置id
+	IpAddrs []string `json:"ipAddrs"`       // nacos 服务端ip列表
 
-	// nacos 服务端ip列表
-	IpAddrs []string `json:"ipAddrs"`
-
-	// tx oss 配置
+	// oss 配置
 	BucketURLStr string `json:"bucketURLStr"`
 	SecretID     string `json:"secretID"`
 	SecretKey    string `json:"secretKey"`
 
-	// 待更新的可执行文件配置
-	ExecOssFileName string `json:"execOssFileName"` // 相对于bucketURLStr的路径
-	ExecOssFileHash string `json:"execOssFileHash"` // 可执行文件的hash
+	// jrasp-daemon 自身配置
+	ExeOssFileName string `json:"exeOssFileName"` // 相对于bucketURLStr的路径
+	ExeOssFileHash string `json:"exeOssFileHash"` // 可执行文件的hash
 
 	// module列表
 	ModuleList []Module `json:"moduleList"` // 全部jar包
@@ -87,9 +85,11 @@ func InitConfig() (*Config, error) {
 
 	v = viper.New()
 	v.SetConfigName("config") // 文件名称
-	v.SetConfigType("json")   // 文件类型
-	v.AddConfigPath("../cfg") // 安装目录下的cfg
-	v.AddConfigPath("./cfg")  // 工程代码目录下的cfg
+	v.SetConfigType("yml")    // 文件类型
+
+	// 安装目录下的cfg
+	v.AddConfigPath("../cfg")
+	v.AddConfigPath("./cfg")
 
 	setDefaultValue(v) // 设置系统默认值
 	// 读取配置文件值，并覆盖系统默尔值
@@ -107,9 +107,9 @@ func InitConfig() (*Config, error) {
 
 // 给参数设置默认值
 func setDefaultValue(vp *viper.Viper) {
-	vp.SetDefault("EnableHook", false)
+	vp.SetDefault("AgentMode", NORMAL)
 	vp.SetDefault("Namespace", "jrasp")
-	vp.SetDefault("EnableAttach", true)
+	vp.SetDefault("EnableAttach", false)
 	vp.SetDefault("EnableAuth", true)
 	vp.SetDefault("LogLevel", 0)
 	vp.SetDefault("LogPath", "../logs/jrasp-daemon.log")
@@ -145,7 +145,22 @@ func setDefaultValue(vp *viper.Viper) {
 	vp.SetDefault("ExecOssFileHash", "")
 }
 
-// 仅由配置决定
-func (this *Config) IsEnableAttach() bool {
-	return this.EnableAttach
+// IsDynamic 是否是动态注入模式
+func (config *Config) IsDynamicMode() bool {
+	return config.AgentMode == DYNAMIC
+}
+
+// IsMonitor 是否是监控模式
+func (config *Config) IsMonitorMode() bool {
+	return config.AgentMode == MONITOR
+}
+
+// IsNormal 是否是正常模式
+func (config *Config) IsNormalMode() bool {
+	return config.AgentMode == NORMAL
+}
+
+// IsDisable 是否是禁用模式
+func (config *Config) IsDisable() bool {
+	return config.AgentMode == DISABLE
 }

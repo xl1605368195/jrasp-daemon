@@ -1,9 +1,9 @@
-package log
+package zlog
 
 import (
 	"fmt"
 	"io"
-	"jrasp-daemon/common"
+	"jrasp-daemon/defs"
 	"os"
 	"time"
 
@@ -25,7 +25,7 @@ type Log struct {
 	level    int         // 日志级别
 }
 
-// main 中调用
+// InitLog main 中调用
 func InitLog(logLevel int, logPath string, hostName string) {
 	logger := NewLog(logPath, hostName, logLevel)
 	InitLogger(logger)
@@ -42,7 +42,7 @@ func NewLog(logPath, hostName string, logLevel int) *Log {
 		EncodeLevel:  zapcore.CapitalLevelEncoder, //将日志级别转换成大写（INFO，WARN，ERROR等）
 		EncodeCaller: zapcore.ShortCallerEncoder,  //采用短文件路径编码输出（test/main.go:14 ）
 		EncodeTime: func(t time.Time, enc zapcore.PrimitiveArrayEncoder) {
-			enc.AppendString(t.Format(common.DATE_FORMAT))
+			enc.AppendString(t.Format(defs.DATE_FORMAT))
 		}, //输出的时间格式
 		EncodeDuration: func(d time.Duration, enc zapcore.PrimitiveArrayEncoder) {
 			enc.AppendInt64(int64(d) / 1000000)

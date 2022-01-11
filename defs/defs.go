@@ -1,8 +1,4 @@
-package common
-
-import "os"
-
-var Sig = make(chan os.Signal, 1)
+package defs
 
 const JRASP_DAEMON_VERSION = "1.0.1"
 

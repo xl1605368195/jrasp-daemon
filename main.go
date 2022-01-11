@@ -2,26 +2,29 @@ package main
 
 import (
 	"fmt"
-	"jrasp-daemon/cfg"
-	"jrasp-daemon/common"
+	"jrasp-daemon/defs"
 	"jrasp-daemon/environ"
-	"jrasp-daemon/log"
 	"jrasp-daemon/nacos"
 	"jrasp-daemon/oss"
+	"jrasp-daemon/userconfig"
 	"jrasp-daemon/utils"
 	"jrasp-daemon/watch"
+	"jrasp-daemon/zlog"
 	"net/http"
+	"os"
 	"os/signal"
 	"syscall"
 )
 
+var Sig = make(chan os.Signal, 1)
+
 func init() {
-	signal.Notify(common.Sig, syscall.SIGINT, syscall.SIGTERM, syscall.SIGKILL)
+	signal.Notify(Sig, syscall.SIGINT, syscall.SIGTERM, syscall.SIGKILL)
 }
 
 func main() {
 
-	fmt.Print(common.LOGO)
+	fmt.Print(defs.LOGO)
 
 	// 环境变量初始化
 	env, err := environ.NewEnviron()
@@ -31,26 +34,26 @@ func main() {
 	}
 
 	// 配置初始化
-	conf, err := cfg.InitConfig()
+	conf, err := userconfig.InitConfig()
 	if err != nil {
-		fmt.Printf("config init error %s\n", err.Error())
+		fmt.Printf("userconfig init error %s\n", err.Error())
 		return
 	}
 
 	// zap日志初始化
-	log.InitLog(conf.LogLevel, conf.LogPath, env.HostName)
+	zlog.InitLog(conf.LogLevel, conf.LogPath, env.HostName)
 
 	// jrasp-daemon 启动标志
-	log.Infof(common.START_UP, "jrasp-daemon startup", "enableHook:%t", conf.EnableHook)
+	zlog.Infof(defs.START_UP, "daemon startup", "agentMode:%s", conf.AgentMode)
 
 	// 日志配置值
-	log.Infof(common.LOG_VALUE, "log value", "logLevel:%d,logPath:%s", conf.LogLevel, conf.LogPath)
+	zlog.Infof(defs.LOG_VALUE, "ylog value", "logLevel:%d,logPath:%s", conf.LogLevel, conf.LogPath)
 
 	// 环境信息打印
-	log.Infof(common.ENV_VALUE, "env value", utils.ToString(env))
+	zlog.Infof(defs.ENV_VALUE, "env value", utils.ToString(env))
 
 	// 配置信息打印
-	log.Infof(common.CONFIG_VALUE, "config value", utils.ToString(conf))
+	zlog.Infof(defs.CONFIG_VALUE, "userconfig value", utils.ToString(conf))
 
 	// 配置客户端初始化
 	nacos.NacosInit(conf, env)
@@ -61,29 +64,32 @@ func main() {
 	// 下载最新的可执行文件
 	ossClient.UpdateDaemonFile()
 
+	// 下载模块插件
 	ossClient.DownLoadModuleFiles()
 
 	newWatch := watch.NewWatch(conf, env)
 
-	// 进程扫描
-	go newWatch.ScanProcess()
+	// jpf工具
+	go newWatch.JavaProcessFilter()
 
 	// 进程注入
 	go newWatch.DoAttach()
 
 	// 进程状态定时上报
-	go newWatch.LogReport()
+	go newWatch.JavaStatusTimer()
 
 	// start pprof for debug
 	go debug(conf)
-	<-common.Sig
+
+	// block main
+	<-Sig
 }
 
-func debug(conf *cfg.Config) {
+func debug(conf *userconfig.Config) {
 	if conf.EnablePprof {
 		err := http.ListenAndServe(fmt.Sprintf(":%d", conf.PprofPort), nil)
 		if err != nil {
-			log.Errorf(common.DEBUG_PPROF, "pprof ListenAndServe failed", "err:%s", err.Error())
+			zlog.Errorf(defs.DEBUG_PPROF, "pprof ListenAndServe failed", "err:%s", err.Error())
 		}
 	}
 }

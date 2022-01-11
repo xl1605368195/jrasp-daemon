@@ -3,16 +3,16 @@
 
 ## 关于 jrasp-daemon
 
-jrasp-daemon 是一个用户态的程序，主要是用来与Java Agent通信，对安全模块的生命周期进行控制，包括自身更新、安全module更新等。
+`jrasp-daemon` 是一个用户态的程序，主要是用来与Java Agent通信，对安全模块的生命周期进行控制，包括自身更新、安全module更新等。
 
-jrasp-daemon 基于Golang构建。
+jrasp-daemon 基于`Golang`构建。
 
 
 ## 平台兼容性
 
 理论上，所有Linux下的发行版都是兼容的，但是只有Debian(包括Ubuntu)与RHEL(包括CentOS)经过了充分测试，对于Agent本身，支持amd64与arm64。
 
-为了功能的完整性，你可能需要以root权限运行jrasp-daemon
+为了功能的完整性，你可能需要以`root`权限运行`jrasp-daemon`
 
 ## jrasp-agent 协同工作
 
@@ -29,6 +29,10 @@ jrasp采用分体式架构, 将非必要进入业务进程的逻辑单独抽取�
 go build -o bin/jrasp-daemon
 ```
 
+## 依赖 nacos 配置中心
+
+nacos配置中心版本 `2.0.3`
+
 ## 安装并启动Daemon
 
 在获取上述二进制产物后，在终端机器进行安装部署：
@@ -36,7 +40,7 @@ go build -o bin/jrasp-daemon
 
 安装到jrasp-agent 目录下
 + 分别将工程目录下`bin/jrasp-daemon`、`bin/jattach` 复制到 `jrasp-agent/bin`
-+ 将`cfg/config.json` 复制到 `jrasp-agent/cfg`下
++ 将`cfg/config.yml` 复制到 `jrasp-agent/cfg`下
 
 
 配置守护进程动（必需）：
