@@ -2,6 +2,7 @@ package userconfig
 
 import (
 	"fmt"
+
 	"github.com/spf13/viper"
 )
 
@@ -50,9 +51,9 @@ type Config struct {
 	RceWhiteList   []string `json:"rceWhiteList"`   // rce命令执行白名单
 
 	// nacos 配置
-	NamespaceId string `json:"namespaceId"` // 命名空间
-	DataId      string `json:"dataId"`      // 配置id
-	IpAddrs []string `json:"ipAddrs"`       // nacos 服务端ip列表
+	NamespaceId string   `json:"namespaceId"` // 命名空间
+	DataId      string   `json:"dataId"`      // 配置id
+	IpAddrs     []string `json:"ipAddrs"`     // nacos 服务端ip列表
 
 	// oss 配置
 	BucketURLStr string `json:"bucketURLStr"`
@@ -136,9 +137,9 @@ func setDefaultValue(vp *viper.Viper) {
 	vp.SetDefault("DataId", "")
 
 	// 腾讯oss 配置
-	vp.SetDefault("BucketURLStr", "https://jrasp-1254321150.cos.ap-shanghai.myqcloud.com")
-	vp.SetDefault("SecretID", "AKID9C3jDCylGajjX9snEYgbLtGRWaaPZTil")
-	vp.SetDefault("SecretKey", "BNoJrFSTJxiXGm7TkCTYR7av77uZ7Uec")
+	vp.SetDefault("BucketURLStr", "")
+	vp.SetDefault("SecretID", "")
+	vp.SetDefault("SecretKey", "")
 
 	// 可执行文件配置,默认为空，不需要更新
 	vp.SetDefault("ExecOssFileName", "")
