@@ -11,10 +11,11 @@ import (
 )
 
 const (
-	shutdownUrl = "http://%s:%s/jrasp/control/shutdown"
-	loginUrl    = "http://%s:%s/jrasp/user/login"
-	degradeUrl  = "http://%s:%s/jrasp/user/login"
-	listUrl     = "http://%s:%s/jrasp/module/list"
+	shutdownUrl  = "http://%s:%s/jrasp/control/shutdown"
+	loginUrl     = "http://%s:%s/jrasp/user/login"
+	degradeUrl   = "http://%s:%s/jrasp/user/login"
+	listUrl      = "http://%s:%s/jrasp/module/list"
+	softFlushUrl = "http://%s:%s/jrasp/module/list&force=false"
 )
 
 type Response struct {
@@ -23,7 +24,7 @@ type Response struct {
 	Message string `json:"message"`
 }
 
-func (jp *JavaProcess) ExitInjectImmediately() bool{
+func (jp *JavaProcess) ExitInjectImmediately() bool {
 	// 关闭注入
 	success := jp.ShutDownAgent()
 	if success {
@@ -90,6 +91,22 @@ func (jp *JavaProcess) DegradeAgent() bool {
 			zlog.Errorf(defs.HTTP_TOKEN, "degrade agent", "send degrade request error,resp.Code=%d", resp.Code)
 			return false
 		}
+	}
+	return true
+}
+
+// 软刷新
+func (jp *JavaProcess) SoftFlush() bool {
+	token, _ := jp.getToken()
+	// 查询所有模块  listUrl
+	resp, err := HttpGet(jp.httpClient, fmt.Sprintf(softFlushUrl, jp.ServerIp, jp.ServerPort), "", token.Data)
+	if err != nil {
+		zlog.Errorf(defs.HTTP_TOKEN, "[BUG]soft flush module", "send flush request error:%v", err)
+		return false
+	}
+	if resp.Code != 200 {
+		zlog.Errorf(defs.HTTP_TOKEN, "[BUG]soft flush module", "error,resp.Code=%d", resp.Code)
+		return false
 	}
 	return true
 }

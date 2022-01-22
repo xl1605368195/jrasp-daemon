@@ -27,7 +27,6 @@ const (
 // 注入状态
 type InjectType string
 
-
 const (
 	NOT_INJECT InjectType = "not inject" // 未注入
 
@@ -49,9 +48,9 @@ type JavaProcess struct {
 	ServerIp   string               `json:"serverIp"`  // 内置jetty开启的IP:端口
 	ServerPort string               `json:"serverPort"`
 
-	env        *environ.Environ   // 环境变量
-	cfg        *userconfig.Config // 配置
-	process    *process.Process   // process 对象
+	env     *environ.Environ   // 环境变量
+	cfg     *userconfig.Config // 配置
+	process *process.Process   // process 对象
 
 	httpClient *http.Client
 
@@ -109,6 +108,10 @@ func (jp *JavaProcess) Attach() error {
 	if token.Code != 200 {
 		zlog.Errorf(defs.ATTACH_DEFAULT, "[Attach]", "login response bad,message=%s", token.Message)
 	}
+
+	// soft flush
+	jp.SoftFlush()
+
 	return nil
 }
 
@@ -116,7 +119,7 @@ func (jp *JavaProcess) execCmd() error {
 	zlog.Infof(defs.ATTACH_DEFAULT, "[Attach]", "attach to jvm[%d] start...", jp.JavaPid)
 	// 通过attach 传递给目标jvm的参数
 	agentArgs := fmt.Sprintf("raspHome=%s;serverIp=%s;serverPort=%d;namespace=%s;enableAuth=%t;username=%s;password=%s",
-	jp.env.InstallDir, serverIp, serverPort, jp.cfg.Namespace, jp.cfg.EnableAuth, jp.cfg.Username, jp.cfg.Password)
+		jp.env.InstallDir, serverIp, serverPort, jp.cfg.Namespace, jp.cfg.EnableAuth, jp.cfg.Username, jp.cfg.Password)
 
 	// jattach pid load instrument false jrasp-launcher.jar
 	cmd := exec.Command(
@@ -241,17 +244,17 @@ func (jp *JavaProcess) GetPid() int32 {
 	return jp.JavaPid
 }
 
-func (jp *JavaProcess) SetStartTime(){
-	startTime,err:=jp.process.CreateTime()
+func (jp *JavaProcess) SetStartTime() {
+	startTime, err := jp.process.CreateTime()
 	if err != nil {
 		zlog.Warnf(defs.WATCH_DEFAULT, "get process startup time error", `{"pid":%d,"err":%v}`, jp.JavaPid, err)
 	}
-	time:=time.Unix(startTime/1000,0)
+	time := time.Unix(startTime/1000, 0)
 	timsStr := time.Format(defs.DATE_FORMAT)
 	jp.StartTime = timsStr
 }
 
-func (jp *JavaProcess) SetInjectStatus(){
+func (jp *JavaProcess) SetInjectStatus() {
 	if jp.CheckRunDir() {
 		success := jp.ReadTokenFile()
 		if success {
