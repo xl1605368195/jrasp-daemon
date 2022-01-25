@@ -98,7 +98,6 @@ func (jp *JavaProcess) DegradeAgent() bool {
 // 软刷新
 func (jp *JavaProcess) SoftFlush() bool {
 	token, _ := jp.getToken()
-	// 查询所有模块  listUrl
 	resp, err := HttpGet(jp.httpClient, fmt.Sprintf(softFlushUrl, jp.ServerIp, jp.ServerPort), "", token.Data)
 	if err != nil {
 		zlog.Errorf(defs.HTTP_TOKEN, "[BUG]soft flush module", "send flush request error:%v", err)
