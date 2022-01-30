@@ -10,10 +10,9 @@ import (
 type AgentMode string
 
 const (
-	MONITOR AgentMode = "monitor" // monitor模式
-	NORMAL  AgentMode = "normal"  // normal模式
-	DYNAMIC AgentMode = "dynamic" // dynamic模式
-	DISABLE AgentMode = "disable" // disbale模式
+	STATIC  AgentMode = "static"  // static模式：  被动注入
+	DYNAMIC AgentMode = "dynamic" // dynamic模式： 主动注入
+	DISABLE AgentMode = "disable" // disbale模式: (主动/被动)注入的退出、禁止注入
 )
 
 type Config struct {
@@ -108,7 +107,7 @@ func InitConfig() (*Config, error) {
 
 // 给参数设置默认值
 func setDefaultValue(vp *viper.Viper) {
-	vp.SetDefault("AgentMode", NORMAL)
+	vp.SetDefault("AgentMode", STATIC)
 	vp.SetDefault("Namespace", "jrasp")
 	vp.SetDefault("EnableAttach", false)
 	vp.SetDefault("EnableAuth", true)
@@ -151,14 +150,9 @@ func (config *Config) IsDynamicMode() bool {
 	return config.AgentMode == DYNAMIC
 }
 
-// IsMonitor 是否是监控模式
-func (config *Config) IsMonitorMode() bool {
-	return config.AgentMode == MONITOR
-}
-
 // IsNormal 是否是正常模式
-func (config *Config) IsNormalMode() bool {
-	return config.AgentMode == NORMAL
+func (config *Config) IsStaticMode() bool {
+	return config.AgentMode == STATIC
 }
 
 // IsDisable 是否是禁用模式
