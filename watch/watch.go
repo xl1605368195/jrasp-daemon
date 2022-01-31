@@ -114,7 +114,7 @@ func (w *Watch) JavaStatusTimer() {
 				return
 			}
 			// todo 上报以及注入的进程状态
-			zlog.Infof(defs.HEART_BEAT, "[heartBeat]", "pid=%d", w.selfPid)
+			w.logHeartBeat()
 		}
 	}
 }
@@ -133,6 +133,24 @@ func (w *Watch) logJavaInfo() {
 		}
 		return true
 	})
+}
+
+func (w *Watch) logHeartBeat() {
+	hb := NewHeartBeat()
+	w.ProcessSyncMap.Range(func(pid, p interface{}) bool {
+		exists, err := process.PidExists(pid.(int32))
+		if err != nil || !exists {
+			// 出错或者不存在时，删除
+			w.ProcessSyncMap.Delete(pid)
+			// todo 对应的run/pid目录确认删除
+			zlog.Infof(defs.WATCH_DEFAULT, "[ScanProcess]", "remove process[%d] watch, process has shutdown", pid)
+		} else {
+			processJava := (p).(*java_process.JavaProcess)
+			hb.Append(processJava)
+		}
+		return true
+	})
+	zlog.Infof(defs.HEART_BEAT,"[logHeartBeat]",hb.toJsonString())
 }
 
 // 进程状态、配置等检测
