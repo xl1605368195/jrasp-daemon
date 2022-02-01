@@ -19,7 +19,7 @@ func InitLogger(logger *Log) {
 }
 
 type Log struct {
-	provider *zap.Logger //只能输出结构化日志
+	provider *zap.Logger // 只能输出结构化日志
 	pid      int         // jrasp-daemon pid
 	hostName string      // 主机名称
 	level    int         // 日志级别

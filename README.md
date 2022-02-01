@@ -16,7 +16,7 @@ jrasp-daemon 基于`Golang`构建。
 
 ## jrasp-agent 协同工作
 
-jrasp采用分体式架构, 将非必要进入业务进程的逻辑单独抽取成出独立Daemon进程，最小化对业务的侵入及资源占用, 提高可用性及稳定性。
+jrasp采用**分体式架构**, 将非必要进入业务进程的逻辑单独抽取成出独立Daemon进程，最小化对业务的侵入及资源占用, 提高可用性及稳定性。
 ![jrasp-daemon](image/jrasp.png)
 
 ## 需要的编译环境
