@@ -2,7 +2,6 @@ package userconfig
 
 import (
 	"fmt"
-
 	"github.com/spf13/viper"
 )
 
@@ -94,13 +93,13 @@ func InitConfig() (*Config, error) {
 	setDefaultValue(v) // 设置系统默认值
 	// 读取配置文件值，并覆盖系统默尔值
 	if err = v.ReadInConfig(); err != nil {
-		return nil, err
+		fmt.Print("use default config,can not read config file")
 	}
 
 	// 配置对象
 	err = v.Unmarshal(&c)
 	if err != nil {
-		fmt.Printf("unmarshal json failed: %v\n", err)
+		fmt.Printf("unmarshal config failed: %v\n", err)
 	}
 	return &c, nil
 }
