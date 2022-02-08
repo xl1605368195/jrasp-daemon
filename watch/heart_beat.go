@@ -7,7 +7,7 @@ import (
 
 // HeartBeat 心跳信息
 type HeartBeatInfo struct {
-	status map[int32]AgentInfo `json:"agentInfo"`
+	Status map[int32]AgentInfo `json:"agentInfo"`
 }
 
 // java agent信息
@@ -20,7 +20,7 @@ type AgentInfo struct {
 
 func NewHeartBeat() *HeartBeatInfo {
 	return &HeartBeatInfo{
-		status: make(map[int32]AgentInfo),
+		Status: make(map[int32]AgentInfo),
 	}
 }
 
@@ -30,10 +30,10 @@ func (hb *HeartBeatInfo) Append(jp *java_process.JavaProcess) {
 		StartTime:    jp.StartTime,
 		InjectStatus: jp.InjectedStatus,
 	}
-	hb.status[jp.JavaPid] = agentInfo
+	hb.Status[jp.JavaPid] = agentInfo
 }
 
 // 转成json字符串
 func (hb *HeartBeatInfo) toJsonString() string {
-	return utils.ToString(hb.status)
+	return utils.ToString(hb.Status)
 }
