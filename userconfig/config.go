@@ -2,6 +2,7 @@ package userconfig
 
 import (
 	"fmt"
+
 	"github.com/spf13/viper"
 )
 
@@ -41,6 +42,7 @@ type Config struct {
 	PidExistsTicker       uint32 `json:"pidExistsTicker"`
 	ProcessInjectTicker   uint32 `json:"processInjectTicker"`
 	HeartBeatReportTicker uint   `json:"heartBeatReportTicker"`
+	DependencyTicker      uint32 `json:"dependencyTicker"`
 
 	// 阻断相关参数的
 	EnableBlock bool `json:"enableBlock"` // 阻断总开关，关闭之后，各个模块都关闭阻断；开启之后，还需要开启模块对应的阻断参数
@@ -124,6 +126,7 @@ func setDefaultValue(vp *viper.Viper) {
 	vp.SetDefault("PidExistsTicker", 10)
 	vp.SetDefault("ProcessInjectTicker", 30)
 	vp.SetDefault("HeartBeatReportTicker", 5)
+	vp.SetDefault("DependencyTicker",5*60)
 
 	vp.SetDefault("EnableBlock", false)
 	vp.SetDefault("EnableRceBlock", false)

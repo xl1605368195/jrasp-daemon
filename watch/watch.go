@@ -26,6 +26,7 @@ type Watch struct {
 	PidExistsTicker        *time.Ticker          // 进程存活检测定时器
 	ProcessInjectTicker    *time.Ticker          // Java进程注入定时器
 	LogReportTicker        *time.Ticker          // 进程信息定时上报
+	DependencyTicker       *time.Ticker          // 依赖信息定时上报
 	HeartBeatReportTicker  *time.Ticker          // 心跳定时器
 	ProcessSyncMap         sync.Map              // 保存监听的java进程
 	JavaProcessHandlerChan chan *process.Process // java 进程处理chan
@@ -41,6 +42,7 @@ func NewWatch(cfg *userconfig.Config, env *environ.Environ) *Watch {
 		PidExistsTicker:        time.NewTicker(time.Second * time.Duration(cfg.PidExistsTicker)),
 		ProcessInjectTicker:    time.NewTicker(time.Second * time.Duration(cfg.ProcessInjectTicker)),
 		HeartBeatReportTicker:  time.NewTicker(time.Minute * time.Duration(cfg.HeartBeatReportTicker)),
+		DependencyTicker:       time.NewTicker(time.Second * time.Duration(cfg.DependencyTicker)),
 		JavaProcessHandlerChan: make(chan *process.Process, 500),
 	}
 	return w
@@ -113,8 +115,12 @@ func (w *Watch) JavaStatusTimer() {
 			if !ok {
 				return
 			}
-			// todo 上报以及注入的进程状态
 			w.logHeartBeat()
+		case _, ok := <-w.DependencyTicker.C:
+			if !ok {
+				return
+			}
+			w.logDependencyInfo()
 		}
 	}
 }
@@ -150,7 +156,30 @@ func (w *Watch) logHeartBeat() {
 		}
 		return true
 	})
-	zlog.Infof(defs.HEART_BEAT,"[logHeartBeat]",hb.toJsonString())
+	zlog.Infof(defs.HEART_BEAT, "[logHeartBeat]", hb.toJsonString())
+}
+
+func (w *Watch) logDependencyInfo() {
+	var list []java_process.Dependency
+	w.ProcessSyncMap.Range(func(pid, p interface{}) bool {
+		exists, err := process.PidExists(pid.(int32))
+		if err != nil || !exists {
+			// 出错或者不存在时，删除
+			w.ProcessSyncMap.Delete(pid)
+			// todo 对应的run/pid目录确认删除
+			zlog.Infof(defs.WATCH_DEFAULT, "[ScanProcess]", "remove process[%d] watch, process has shutdown", pid)
+		} else {
+			processJava := (p).(*java_process.JavaProcess)
+			if processJava.InjectedStatus == java_process.SUCCESS_INJECT || processJava.InjectedStatus == java_process.SUCCESS_DEGRADE {
+				dependencyList, success := processJava.GetDependency()
+				if success {
+					list = append(list, dependencyList...)
+				}
+			}
+		}
+		return true
+	})
+	zlog.Infof(defs.DEPENDENCY_INFO, "all java dependency list", "%s", utils.ToString(list))
 }
 
 // 进程状态、配置等检测
