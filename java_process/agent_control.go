@@ -15,7 +15,7 @@ const (
 	loginUrl     = "http://%s:%s/jrasp/user/login"
 	degradeUrl   = "http://%s:%s/jrasp/user/login"
 	listUrl      = "http://%s:%s/jrasp/module/list"
-	softFlushUrl = "http://%s:%s/jrasp/module/list&force=false"
+	softFlushUrl = "http://%s:%s/jrasp/module/flush&force=false"
 )
 
 type Response struct {
