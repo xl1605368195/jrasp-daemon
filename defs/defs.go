@@ -27,4 +27,5 @@ const (
 	OSS_DOWNLOAD        int = START_LOG_ID + 14
 	OSS_UPLOAD          int = START_LOG_ID + 15
 	DEPENDENCY_INFO     int = START_LOG_ID + 16
+	AGENT_SUCCESS_EXIT  int = START_LOG_ID + 17
 )

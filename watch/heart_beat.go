@@ -18,6 +18,14 @@ type AgentInfo struct {
 	// jdk版本
 }
 
+func NewAgentInfo(pid int32,startTime string,status java_process.InjectType)*AgentInfo{
+	return &AgentInfo{
+		Pid: pid,
+		StartTime: startTime,
+		InjectStatus: status,
+	}
+}
+
 func NewHeartBeat() *HeartBeatInfo {
 	return &HeartBeatInfo{
 		Status: make(map[int32]AgentInfo),
