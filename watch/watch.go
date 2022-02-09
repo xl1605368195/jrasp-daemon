@@ -132,7 +132,7 @@ func (w *Watch) logJavaInfo() {
 			// 出错或者不存在时，删除
 			w.ProcessSyncMap.Delete(pid)
 			// todo 对应的run/pid目录确认删除
-			zlog.Infof(defs.WATCH_DEFAULT, "[ScanProcess]", "remove process[%d] watch, process has shutdown", pid)
+			zlog.Infof(defs.JAVA_PROCESS_SHUTDOWN, "[ScanProcess]", "%d", pid)
 		} else {
 			processJava := (p).(*java_process.JavaProcess)
 			zlog.Infof(defs.WATCH_DEFAULT, "[LogReport]", utils.ToString(processJava))
@@ -149,7 +149,7 @@ func (w *Watch) logHeartBeat() {
 			// 出错或者不存在时，删除
 			w.ProcessSyncMap.Delete(pid)
 			// todo 对应的run/pid目录确认删除
-			zlog.Infof(defs.WATCH_DEFAULT, "[ScanProcess]", "remove process[%d] watch, process has shutdown", pid)
+			zlog.Infof(defs.JAVA_PROCESS_SHUTDOWN, "[ScanProcess]", "%d", pid)
 		} else {
 			processJava := (p).(*java_process.JavaProcess)
 			hb.Append(processJava)
@@ -167,7 +167,7 @@ func (w *Watch) logDependencyInfo() {
 			// 出错或者不存在时，删除
 			w.ProcessSyncMap.Delete(pid)
 			// todo 对应的run/pid目录确认删除
-			zlog.Infof(defs.WATCH_DEFAULT, "[ScanProcess]", "remove process[%d] watch, process has shutdown", pid)
+			zlog.Infof(defs.JAVA_PROCESS_SHUTDOWN, "[ScanProcess]", "%d", pid)
 		} else {
 			processJava := (p).(*java_process.JavaProcess)
 			if processJava.InjectedStatus == java_process.SUCCESS_INJECT || processJava.InjectedStatus == java_process.SUCCESS_DEGRADE {
@@ -193,7 +193,7 @@ func (w *Watch) getJavaProcessInfo(procss *process.Process) {
 	}
 
 	javaProcess := java_process.NewJavaProcess(procss, w.cfg, w.env)
-
+	
 	// cmdline 信息
 	javaProcess.SetCmdLines()
 
@@ -203,7 +203,7 @@ func (w *Watch) getJavaProcessInfo(procss *process.Process) {
 	// 设置注入状态信息
 	javaProcess.SetInjectStatus()
 
-	zlog.Infof(defs.WATCH_DEFAULT, "find a java process", utils.ToString(javaProcess))
+	zlog.Infof(defs.JAVA_PROCESS_STARTUP, "find a java process", utils.ToString(javaProcess))
 
 	// 进程加入观测集合中
 	w.ProcessSyncMap.Store(javaProcess.JavaPid, javaProcess)
@@ -215,7 +215,7 @@ func (w *Watch) removeExitedJavaProcess() {
 		if err != nil || !exists {
 			// 出错或者不存在时，删除
 			w.ProcessSyncMap.Delete(pid)
-			zlog.Infof(defs.WATCH_DEFAULT, "[ScanProcess]", "remove process[%d] watch, process has shutdown", pid)
+			zlog.Infof(defs.JAVA_PROCESS_SHUTDOWN, "[ScanProcess]", "%d", pid)
 		}
 		return true
 	})
@@ -226,7 +226,7 @@ func (w *Watch) checkExisted(pid interface{}) bool {
 	if err != nil || !exists {
 		// 出错或者不存在时，删除
 		w.ProcessSyncMap.Delete(pid)
-		zlog.Infof(defs.WATCH_DEFAULT, "[ScanProcess]", "remove process[%d] watch, process has shutdown", pid)
+		zlog.Infof(defs.JAVA_PROCESS_SHUTDOWN, "[ScanProcess]", "%d", pid)
 		return true // continue
 	}
 	return false

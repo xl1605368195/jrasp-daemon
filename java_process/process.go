@@ -33,8 +33,8 @@ const (
 	SUCCESS_INJECT InjectType = "success inject" // 注入正常
 	FAILED_INJECT  InjectType = "failed inject"  // 注入时失败
 
-	SUCCESS_EXIT InjectType = "success exit inject" // 注入后正常退出状态
-	FAILED_EXIT  InjectType = "failed exit"         // 退出时后失败
+	SUCCESS_EXIT InjectType = "success uninstall agent" // agent卸载成功
+	FAILED_EXIT  InjectType = "failed uninstall agent"  // agent卸载失败
 
 	FAILED_DEGRADE  InjectType = "failed degrade"  // 降级失败时后失败
 	SUCCESS_DEGRADE InjectType = "success degrade" // 降级正常
