@@ -18,10 +18,10 @@ type AgentInfo struct {
 	// jdk版本
 }
 
-func NewAgentInfo(pid int32,startTime string,status java_process.InjectType)*AgentInfo{
+func NewAgentInfo(pid int32, startTime string, status java_process.InjectType) *AgentInfo {
 	return &AgentInfo{
-		Pid: pid,
-		StartTime: startTime,
+		Pid:          pid,
+		StartTime:    startTime,
 		InjectStatus: status,
 	}
 }

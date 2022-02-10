@@ -126,7 +126,7 @@ func setDefaultValue(vp *viper.Viper) {
 	vp.SetDefault("PidExistsTicker", 10)
 	vp.SetDefault("ProcessInjectTicker", 30)
 	vp.SetDefault("HeartBeatReportTicker", 5)
-	vp.SetDefault("DependencyTicker",12*60*60)
+	vp.SetDefault("DependencyTicker", 12*60*60)
 
 	vp.SetDefault("EnableBlock", false)
 	vp.SetDefault("EnableRceBlock", false)

@@ -41,7 +41,7 @@ func main() {
 	}
 
 	// zap日志初始化
-	zlog.InitLog(conf.LogLevel, conf.LogPath, env.HostName)
+	zlog.InitLog(conf.LogLevel, conf.LogPath, env.HostName, env.Ip)
 
 	// jrasp-daemon 启动标志
 	zlog.Infof(defs.START_UP, "daemon startup", `{"agentMode":"%s"}`, conf.AgentMode)

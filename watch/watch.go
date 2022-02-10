@@ -193,7 +193,7 @@ func (w *Watch) getJavaProcessInfo(procss *process.Process) {
 	}
 
 	javaProcess := java_process.NewJavaProcess(procss, w.cfg, w.env)
-	
+
 	// cmdline 信息
 	javaProcess.SetCmdLines()
 

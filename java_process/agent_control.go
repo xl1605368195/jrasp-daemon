@@ -31,7 +31,7 @@ func (jp *JavaProcess) ExitInjectImmediately() bool {
 		// 标记为成功退出状态
 		jp.MarkExitInject()
 		// 退出后消息立即上报
-		zlog.Infof(defs.AGENT_SUCCESS_EXIT, "java agent exit", `{"pid":%d,"status":"%s","startTime":"%s"}`, jp.JavaPid,jp.InjectedStatus,jp.StartTime)
+		zlog.Infof(defs.AGENT_SUCCESS_EXIT, "java agent exit", `{"pid":%d,"status":"%s","startTime":"%s"}`, jp.JavaPid, jp.InjectedStatus, jp.StartTime)
 	} else {
 		// 标记为异常退出状态
 		jp.MarkFailedExitInject()

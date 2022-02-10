@@ -21,18 +21,19 @@ func InitLogger(logger *Log) {
 type Log struct {
 	provider *zap.Logger // 只能输出结构化日志
 	pid      int         // jrasp-daemon pid
+	ip       string      // ip
 	hostName string      // 主机名称
 	level    int         // 日志级别
 }
 
 // InitLog main 中调用
-func InitLog(logLevel int, logPath string, hostName string) {
-	logger := NewLog(logPath, hostName, logLevel)
+func InitLog(logLevel int, logPath string, hostName, ip string) {
+	logger := NewLog(logPath, hostName, ip, logLevel)
 	InitLogger(logger)
 }
 
 // 初始化日志 logger
-func NewLog(logPath, hostName string, logLevel int) *Log {
+func NewLog(logPath, hostName, ip string, logLevel int) *Log {
 	// 日志配置
 	config := zapcore.EncoderConfig{
 		MessageKey:   "msg",                       //结构化（json）输出：msg的key
@@ -61,7 +62,7 @@ func NewLog(logPath, hostName string, logLevel int) *Log {
 	)
 	logger := zap.New(core, zap.AddCaller(), zap.AddCallerSkip(1))
 
-	return &Log{provider: logger, hostName: hostName, pid: os.Getpid(), level: logLevel}
+	return &Log{provider: logger, ip: ip, hostName: hostName, pid: os.Getpid(), level: logLevel}
 }
 
 func getWriter(filename string) io.Writer {
@@ -92,6 +93,7 @@ func Debugf(logId int, msg string, format string, v ...interface{}) {
 		defaultLogger.provider.Debug(
 			msg,
 			zap.Int("logId", logId),
+			zap.String("ip", defaultLogger.ip),
 			zap.String("hostName", defaultLogger.hostName),
 			zap.Int("pid", defaultLogger.pid),
 			zap.String("detail", fmt.Sprintf(format, v...)))
@@ -107,6 +109,7 @@ func Infof(logId int, msg string, format string, v ...interface{}) {
 		defaultLogger.provider.Info(
 			msg,
 			zap.Int("logId", logId),
+			zap.String("ip", defaultLogger.ip),
 			zap.String("hostName", defaultLogger.hostName),
 			zap.Int("pid", defaultLogger.pid),
 			zap.String("detail", fmt.Sprintf(format, v...)))
@@ -122,6 +125,7 @@ func Warnf(logId int, msg string, format string, v ...interface{}) {
 		defaultLogger.provider.Warn(
 			msg,
 			zap.Int("logId", logId),
+			zap.String("ip", defaultLogger.ip),
 			zap.String("hostName", defaultLogger.hostName),
 			zap.Int("pid", defaultLogger.pid),
 			zap.String("detail", fmt.Sprintf(format, v...)))
@@ -137,6 +141,7 @@ func Errorf(logId int, msg string, format string, v ...interface{}) {
 		defaultLogger.provider.Error(
 			msg,
 			zap.Int("logId", logId),
+			zap.String("ip", defaultLogger.ip),
 			zap.String("hostName", defaultLogger.hostName),
 			zap.Int("pid", defaultLogger.pid),
 			zap.String("detail", fmt.Sprintf(format, v...)))
@@ -152,6 +157,7 @@ func Fatalf(logId int, msg string, format string, v ...interface{}) {
 		defaultLogger.provider.Fatal(
 			msg,
 			zap.Int("logId", logId),
+			zap.String("ip", defaultLogger.ip),
 			zap.String("hostName", defaultLogger.hostName),
 			zap.Int("pid", defaultLogger.pid),
 			zap.String("detail", fmt.Sprintf(format, v...)))
