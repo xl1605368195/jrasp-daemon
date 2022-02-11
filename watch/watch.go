@@ -237,11 +237,12 @@ func (w *Watch) DynamicInject(javaProcess *java_process.JavaProcess) {
 		err := javaProcess.Attach()
 		if err != nil {
 			// java_process 执行失败
-			zlog.Errorf(defs.WATCH_DEFAULT, "[BUG] attach to java failed", "taget jvm[%d],err:%v", javaProcess.JavaPid, err)
+			zlog.Errorf(defs.WATCH_DEFAULT, "[BUG] attach to java failed", "taget jvm[%d],err:%v", javaProcess.JavaPid, err)		
 			javaProcess.MarkFailedInjected()
 		} else {
 			// load agent 之后，标记为[注入状态]，防止 agent 错误再次发生，人工介入排查
 			javaProcess.MarkSuccessInjected()
+			zlog.Infof(defs.AGENT_SUCCESS_INIT, "java agent init", `{"pid":%d,"status":"%s","startTime":"%s"}`, javaProcess.JavaPid, javaProcess.InjectedStatus, javaProcess.StartTime)
 		}
 	}
 }

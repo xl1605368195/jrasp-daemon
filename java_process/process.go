@@ -97,7 +97,6 @@ func (jp *JavaProcess) Attach() error {
 		zlog.Errorf(defs.ATTACH_DEFAULT, "[Attach]", "read token file error:%v", err)
 		return errors.New("read token file,error")
 	}
-	zlog.Infof(defs.ATTACH_DEFAULT, "[Attach]", "attach to jvm[%d] success", jp.JavaPid)
 
 	// login
 	token, err := jp.getToken()
