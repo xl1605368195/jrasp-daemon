@@ -65,48 +65,46 @@ func (this *TxOss) UpLoad(ossName, filePath string) (bool, error) {
 func (this *TxOss) UpdateDaemonFile() {
 	// 配置中可执行文件hash不为空，并且与env中可执行文件hash不相同
 	if this.cfg.ExeOssFileHash != "" && this.cfg.ExeOssFileHash != this.env.ExeFileHash {
-		newFilePath := filepath.Join(this.env.InstallDir, "bin/jrasp-daemon_new")
+		newFilePath := filepath.Join(this.env.InstallDir, "bin", "jrasp-daemon.tmp")
 		_ = this.DownLoad(this.cfg.ExeOssFileName, newFilePath)
 		newHash, err := utils.GetFileHash(newFilePath)
 		if err != nil {
 			zlog.Errorf(defs.OSS_DOWNLOAD, "download  jrasp-daemon exec file", "err:%v", err)
 		} else {
-			this.checkHashAndReStart(newHash, newFilePath)
+			// 校验下载文件的hash
+			if newHash == this.cfg.ExeOssFileHash {
+				this.replace()
+			} else {
+				zlog.Errorf(defs.OSS_DOWNLOAD, "[BUG]check new file hash err", "newFileHash:%s,configHash:%s", newHash, this.cfg.ExeOssFileHash)
+				err := os.Remove(newFilePath)
+				if err != nil {
+					zlog.Errorf(defs.OSS_DOWNLOAD, "[BUG]delete broken file err", "newFileHash:%s", newHash)
+				}
+			}
 		}
 	} else {
 		zlog.Infof(defs.OSS_DOWNLOAD, "no need to update jrasp-daemon", "userconfig.ExecOssFileHash:%s,env.ExecDiskFileHash:%s", this.cfg.ExeOssFileHash, this.env.ExeFileHash)
 	}
 }
 
-func (this *TxOss) checkHashAndReStart(newFileHash string, newFilePath string) {
-	// 校验下载文件的hash
-	if newFileHash == this.cfg.ExeOssFileHash {
-		this.replace(newFileHash, newFilePath)
-	} else {
-		zlog.Errorf(defs.OSS_DOWNLOAD, "[BUG]check file hash err", "newFileHash:%s,configHash:%s", newFileHash, this.cfg.ExeOssFileHash)
-		err := os.Remove(newFilePath)
-		if err != nil {
-			zlog.Errorf(defs.OSS_DOWNLOAD, "[BUG]delete broken file err", "newFileHash:%s,fileHash:%s", newFilePath, newFileHash)
-		}
-	}
-}
-
 // replace
-func (this *TxOss) replace(newFileHash string, newFilePath string) {
-	zlog.Infof(defs.OSS_DOWNLOAD, "check hash success", "hash:%s", newFileHash)
+func (this *TxOss) replace() {
 	// 增加可执行权限
-	err := os.Chmod(newFilePath, 0700)
+	err := os.Chmod("jrasp-daemon.tmp", 0700)
 	if err != nil {
-		zlog.Infof(defs.OSS_DOWNLOAD, "chmod +x jrasp-demon_new", "err:%v", err)
+		zlog.Infof(defs.OSS_DOWNLOAD, "chmod +x jrasp-demon.tmp", "err:%v", err)
 	}
-	oldFilePath := filepath.Join(this.env.InstallDir, "bin/jrasp-daemon")
-	err = os.Rename(newFilePath,oldFilePath)
+	err = os.Rename("jrasp-daemon.tmp", "jrasp-daemon")
 	if err == nil {
-		zlog.Infof(defs.OSS_DOWNLOAD, "update jrasp-daemon file success", "jrasp-daemon process will exit...")
-		os.Exit(0) // 进程退出
+		zlog.Infof(defs.OSS_DOWNLOAD, "update jrasp-daemon file success", "rename jrasp-daemon file success,daemon process will exit...")
+		// 再次check
+		success, _ := utils.PathExists("jrasp-daemon")
+		if success {
+			os.Exit(0) // 进程退出
+		}
 	} else {
 		zlog.Errorf(defs.OSS_DOWNLOAD, "[BUG]rename jrasp-daemon file error", "jrasp-daemon file will delete")
-		_ = os.Remove(newFilePath)
+		_ = os.Remove("jrasp-daemon.tmp")
 	}
 }
 
