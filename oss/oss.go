@@ -100,7 +100,7 @@ func (this *TxOss) replace(newFileHash string, newFilePath string) {
 		zlog.Infof(defs.OSS_DOWNLOAD, "chmod +x jrasp-demon_new", "err:%v", err)
 	}
 	oldFilePath := filepath.Join(this.env.InstallDir, "bin/jrasp-daemon")
-	err = os.Rename(oldFilePath, newFilePath)
+	err = os.Rename(newFilePath,oldFilePath)
 	if err == nil {
 		zlog.Infof(defs.OSS_DOWNLOAD, "update jrasp-daemon file success", "jrasp-daemon process will exit...")
 		os.Exit(0) // 进程退出
