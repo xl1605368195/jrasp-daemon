@@ -86,7 +86,7 @@ func NacosInit(cfg *userconfig.Config, env *environ.Environ) {
 			if err != nil {
 				zlog.Warnf(defs.NACOS_LISTEN_CONFIG, "[ListenConfig]", "write file to config.json,err:%v", err)
 			}
-			zlog.Infof(defs.NACOS_LISTEN_CONFIG, "[ListenConfig]", "jrasp-daemon will exit...")
+			zlog.Infof(defs.NACOS_LISTEN_CONFIG, "[ListenConfig]", "config update,jrasp-daemon will exit(0)...")
 			os.Exit(0)
 		},
 	})

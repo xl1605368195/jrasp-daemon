@@ -1,6 +1,6 @@
 package defs
 
-const JRASP_DAEMON_VERSION = "1.0.1"
+const JRASP_DAEMON_VERSION = "1.0.4"
 
 const DATE_FORMAT = "2006-01-02 15:04:05.000"
 

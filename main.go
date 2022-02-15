@@ -69,7 +69,7 @@ func main() {
 
 	newWatch := watch.NewWatch(conf, env)
 
-	// jpf工具
+	// jps工具
 	go newWatch.JavaProcessFilter()
 
 	// 进程注入

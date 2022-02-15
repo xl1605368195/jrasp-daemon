@@ -2,6 +2,10 @@ package environ
 
 import (
 	"errors"
+	"github.com/shirou/gopsutil/v3/cpu"
+	"github.com/shirou/gopsutil/v3/disk"
+	"github.com/shirou/gopsutil/v3/mem"
+	"jrasp-daemon/defs"
 	"jrasp-daemon/utils"
 	"net"
 	"os"
@@ -9,12 +13,20 @@ import (
 	"runtime"
 )
 
+const GB = 1024 * 1024 * 1024
+
 type Environ struct {
 	InstallDir  string `json:"installDir"`  // 安装目录
 	HostName    string `json:"hostName"`    // 主机/容器名称
 	Ip          string `json:"ip"`          // ipAddress
 	OsType      string `json:"osType"`      // 操作系统类型
 	ExeFileHash string `json:"exeFileHash"` // 磁盘可执行文件的md5值
+
+	// 系统信息
+	TotalMem  uint64 `json:"totalMem"`  // 总内存 GB
+	CpuCounts int    `json:"cpuCounts"` // logic cpu cores
+	FreeDisk  uint64 `json:"freeDisk"`  // 可用磁盘空间 GB
+	Version   string `json:"version"`   // rasp 版本
 }
 
 func NewEnviron() (*Environ, error) {
@@ -23,6 +35,10 @@ func NewEnviron() (*Environ, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	// install dir
+	execDir := filepath.Dir(filepath.Dir(execPath))
+
 	// md5 值
 	md5Str, err := utils.GetFileHash(execPath)
 	if err != nil {
@@ -33,12 +49,26 @@ func NewEnviron() (*Environ, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	// mem
+	memInfo, _ := mem.VirtualMemory()
+
+	// disk
+	FreeDisk, err := GetInstallDisk(execDir)
+
+	// cpu cnt
+	cpuCounts, err := cpu.Counts(true)
+
 	env := &Environ{
 		HostName:    getHostname(),
 		Ip:          ipAddress,
-		InstallDir:  filepath.Dir(filepath.Dir(execPath)),
+		InstallDir:  execDir,
 		OsType:      runtime.GOOS,
 		ExeFileHash: md5Str,
+		TotalMem:    memInfo.Total / GB,
+		CpuCounts:   cpuCounts,
+		FreeDisk:    FreeDisk,
+		Version:     defs.JRASP_DAEMON_VERSION,
 	}
 	return env, nil
 }
@@ -83,4 +113,13 @@ func getExternalIP() (string, error) {
 		}
 	}
 	return "", errors.New("are you connected to the network?")
+}
+
+func GetInstallDisk(path string) (free uint64, err error) {
+	state, err := disk.Usage(path)
+	if err != nil {
+		return 0, err
+	}
+	free = state.Free / GB
+	return free, nil
 }
