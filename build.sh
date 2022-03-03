@@ -5,7 +5,7 @@ cd $(dirname $0) || exit 1
 projectpath=`pwd`
 
 # 设置阿里云代理
-export GOPROXY="http://mirrors.aliyun.com/goproxy/"
+export GOPROXY="https://mirrors.aliyun.com/goproxy/"
 
 # 编译信息
 moduleName=$(go list -m)
