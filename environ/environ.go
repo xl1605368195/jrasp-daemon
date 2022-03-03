@@ -13,6 +13,12 @@ import (
 	"runtime"
 )
 
+var (
+	BuildDateTime      = ""
+	BuildGitBranch     = ""
+	BuildGitCommit     = ""
+)
+
 const GB = 1024 * 1024 * 1024
 
 type Environ struct {
@@ -27,6 +33,11 @@ type Environ struct {
 	CpuCounts int    `json:"cpuCounts"` // logic cpu cores
 	FreeDisk  uint64 `json:"freeDisk"`  // 可用磁盘空间 GB
 	Version   string `json:"version"`   // rasp 版本
+
+	// 编译信息
+	BuildDateTime      string `json:"buildDateTime"`
+	BuildGitBranch     string `json:"buildGitBranch"`
+	BuildGitCommit     string `json:"buildGitCommit"`
 }
 
 func NewEnviron() (*Environ, error) {
@@ -60,15 +71,18 @@ func NewEnviron() (*Environ, error) {
 	cpuCounts, err := cpu.Counts(true)
 
 	env := &Environ{
-		HostName:    getHostname(),
-		Ip:          ipAddress,
-		InstallDir:  execDir,
-		OsType:      runtime.GOOS,
-		ExeFileHash: md5Str,
-		TotalMem:    memInfo.Total / GB,
-		CpuCounts:   cpuCounts,
-		FreeDisk:    FreeDisk,
-		Version:     defs.JRASP_DAEMON_VERSION,
+		HostName:           getHostname(),
+		Ip:                 ipAddress,
+		InstallDir:         execDir,
+		OsType:             runtime.GOOS,
+		ExeFileHash:        md5Str,
+		TotalMem:           memInfo.Total / GB,
+		CpuCounts:          cpuCounts,
+		FreeDisk:           FreeDisk,
+		Version:            defs.JRASP_DAEMON_VERSION,
+		BuildGitBranch:     BuildGitBranch,
+		BuildDateTime:      BuildDateTime,
+		BuildGitCommit:     BuildGitCommit,
 	}
 	return env, nil
 }
