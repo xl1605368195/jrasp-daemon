@@ -1,7 +1,7 @@
 package utils
 
 import (
-	"crypto/sha256"
+	"crypto/md5"
 	"encoding/hex"
 	"io"
 	"os"
@@ -29,7 +29,8 @@ func GetFileHash(pluginPath string) (string, error) {
 			err = ferr
 		}
 	}()
-	h := sha256.New()
+	// md5 方便在mac上机算
+	h := md5.New()
 	_, err = io.Copy(h, file)
 	if err != nil {
 		return "", err

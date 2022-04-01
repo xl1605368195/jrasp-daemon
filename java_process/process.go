@@ -10,9 +10,11 @@ import (
 	"jrasp-daemon/utils"
 	"jrasp-daemon/zlog"
 	"net/http"
+	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 
@@ -56,29 +58,25 @@ type JavaProcess struct {
 
 	InjectedStatus InjectType `json:"injectedStatus"`
 
-	// 加载的模块信息
-	ModuleInfos []ModuleInfo `json:"moduleInfo"`
-}
+	NeedUpdateParameters bool // 是否需要更新参数
 
-// module信息
-type ModuleInfo struct {
-	Name        string `json:"name"`
-	IsLoaded    bool   `json:"isLoaded"`
-	IsActivated bool   `json:"isActivated"`
-	ClassCnt    int    `json:"classCnt"`
-	MethodCnt   int    `json:"methodCnt"`
-	Version     string `json:"version"`
-	Author      string `json:"author"`
+	NeedUpdateModules bool // 是否需要刷新模块
+
+	// 模块配置信息
+	ModuleConfigMap map[string]userconfig.ModuleConfig
 }
 
 func NewJavaProcess(p *process.Process, cfg *userconfig.Config, env *environ.Environ) *JavaProcess {
 	javaProcess := &JavaProcess{
-		JavaPid:    p.Pid,
-		process:    p,
-		env:        env,
-		cfg:        cfg,
-		AgentMode:  cfg.AgentMode,
-		httpClient: &http.Client{},
+		JavaPid:              p.Pid,
+		process:              p,
+		env:                  env,
+		cfg:                  cfg,
+		AgentMode:            cfg.AgentMode,
+		ModuleConfigMap:      cfg.ModuleConfigMap,
+		httpClient:           &http.Client{},
+		NeedUpdateParameters: true,
+		NeedUpdateModules:    true,
 	}
 	return javaProcess
 }
@@ -129,8 +127,7 @@ func (jp *JavaProcess) execCmd() error {
 	)
 
 	zlog.Debugf(defs.ATTACH_DEFAULT, "[Attach]", "cmdArgs:%s", cmd.Args)
-	// 权限切换在 jattach 里面做了，直接命令执行就行
-
+	// 权限切换在 jattach 里面做了，直接在root权限下执行命令就行
 	if err := cmd.Start(); err != nil {
 		zlog.Warnf(defs.ATTACH_DEFAULT, "[Attach]", "cmd.Start error:%v", err)
 		return err
@@ -201,6 +198,42 @@ func (jp *JavaProcess) ReadTokenFile() bool {
 		zlog.Infof(defs.ATTACH_READ_TOKEN, "[token file]", "attach token file[%s] not exist", tokenFilePath)
 		return false
 	}
+}
+
+// UpdateParameters 更新模块参数
+func (jp *JavaProcess) UpdateParameters() bool {
+	response, _ := jp.getToken()
+	apiUrl := fmt.Sprintf(BASE_URL, jp.ServerIp, jp.ServerPort)
+	u, _ := url.ParseRequestURI(apiUrl)
+	client := &http.Client{}
+	for _, v := range jp.ModuleConfigMap {
+		// 拼接路径
+		resource := fmt.Sprintf("/%s/%s/%s", "jrasp",v.ModuleName, v.RouterPath)
+		u.Path = resource
+		urlStr := u.String()
+		data := url.Values{}
+		// 拼接参数
+		for key, value := range v.Parameters {
+			data.Set(key, value)
+		}
+		dataStr := data.Encode()
+		req, _ := http.NewRequest(http.MethodPost, urlStr, strings.NewReader(dataStr))
+		req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+		req.Header.Add("Authentication", response.Data)
+		req.Header.Add("Content-Length", strconv.Itoa(len(dataStr)))
+		resp, err := client.Do(req)
+		if err != nil {
+			zlog.Errorf(defs.UPDATE_MODULE_PARAMETERS, "update module parameters failed", "http request,err:%v", err)
+			return false
+		}
+		bodyText, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			zlog.Errorf(defs.UPDATE_MODULE_PARAMETERS, "update module parameters failed", "read body text err:%v", err)
+			return false
+		}
+		zlog.Infof(defs.UPDATE_MODULE_PARAMETERS, "update module parameters success", "bodyText:%s", string(bodyText))
+	}
+	return true
 }
 
 func (jp *JavaProcess) IsInject() bool {

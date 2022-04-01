@@ -97,6 +97,12 @@ func (w *Watch) DoAttach() {
 				} else {
 					w.DynamicInject(javaProcess)
 				}
+
+				// 模块参数更新
+				if javaProcess.NeedUpdateParameters {
+					javaProcess.NeedUpdateParameters = false
+					javaProcess.UpdateParameters()
+				}
 				return true // continue
 			})
 		}
@@ -200,7 +206,7 @@ func (w *Watch) getJavaProcessInfo(procss *process.Process) {
 	// 设置java进程启动时间
 	javaProcess.SetStartTime()
 
-	// 设置注入状态信息
+	// 设置注入状态信息：已经注入过的，重现建立连接
 	javaProcess.SetInjectStatus()
 
 	zlog.Infof(defs.JAVA_PROCESS_STARTUP, "find a java process", utils.ToString(javaProcess))
@@ -237,7 +243,7 @@ func (w *Watch) DynamicInject(javaProcess *java_process.JavaProcess) {
 		err := javaProcess.Attach()
 		if err != nil {
 			// java_process 执行失败
-			zlog.Errorf(defs.WATCH_DEFAULT, "[BUG] attach to java failed", "taget jvm[%d],err:%v", javaProcess.JavaPid, err)		
+			zlog.Errorf(defs.WATCH_DEFAULT, "[BUG] attach to java failed", "taget jvm[%d],err:%v", javaProcess.JavaPid, err)
 			javaProcess.MarkFailedInjected()
 		} else {
 			// load agent 之后，标记为[注入状态]，防止 agent 错误再次发生，人工介入排查

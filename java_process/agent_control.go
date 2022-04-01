@@ -11,10 +11,9 @@ import (
 )
 
 const (
+	BASE_URL     = "http://%s:%s"
 	shutdownUrl  = "http://%s:%s/jrasp/control/shutdown"
 	loginUrl     = "http://%s:%s/jrasp/user/login"
-	degradeUrl   = "http://%s:%s/jrasp/user/login"
-	listUrl      = "http://%s:%s/jrasp/module/list"
 	softFlushUrl = "http://%s:%s/jrasp/module/flush?force=false"
 )
 
@@ -40,7 +39,7 @@ func (jp *JavaProcess) ExitInjectImmediately() bool {
 	return success
 }
 
-// 关闭注入
+// ShutDownAgent 关闭注入
 func (jp *JavaProcess) ShutDownAgent() bool {
 	token, err := jp.getToken()
 	if err != nil {
@@ -59,47 +58,9 @@ func (jp *JavaProcess) ShutDownAgent() bool {
 	return true
 }
 
-// 降级冻结
-func (jp *JavaProcess) DegradeAgent() bool {
-	token, _ := jp.getToken()
-	// 查询所有模块  listUrl
-	resp, err := HttpGet(jp.httpClient, fmt.Sprintf(listUrl, jp.ServerIp, jp.ServerPort), "", token.Data)
-	if err != nil {
-		zlog.Errorf(defs.HTTP_TOKEN, "degrade agent", "send list request error:%v", err)
-		return false
-	}
-	var moduleInfoList []ModuleInfo
-	err = json.Unmarshal([]byte(resp.Data), &moduleInfoList)
-	if err != nil {
-		zlog.Errorf(defs.HTTP_TOKEN, "get module list", "error:%v", err)
-		return false
-	}
-	var ids []string
-	for _, v := range moduleInfoList {
-		if v.IsActivated {
-			ids = append(ids, v.Name)
-		}
-	}
-	// 有激活的模块
-	if len(ids) > 0 {
-		var params = fmt.Sprintf(`ids=%s`, strings.Join(ids, ","))
-		resp, err := HttpGet(jp.httpClient, fmt.Sprintf(degradeUrl, jp.ServerIp, jp.ServerPort), params, token.Data)
-		if err != nil {
-			zlog.Errorf(defs.HTTP_TOKEN, "degrade agent", "send degrade request error:%v", err)
-			return false
-		}
-		if resp.Code != 200 {
-			zlog.Errorf(defs.HTTP_TOKEN, "degrade agent", "send degrade request error,resp.Code=%d", resp.Code)
-			return false
-		}
-	}
-	return true
-}
-
-// 软刷新
+// SoftFlush 软刷新
 func (jp *JavaProcess) SoftFlush() bool {
 	token, _ := jp.getToken()
-	// 查询所有模块  listUrl
 	resp, err := HttpGet(jp.httpClient, fmt.Sprintf(softFlushUrl, jp.ServerIp, jp.ServerPort), "", token.Data)
 	if err != nil {
 		zlog.Errorf(defs.HTTP_TOKEN, "[BUG]soft flush module", "send flush request error:%v", err)
@@ -109,6 +70,7 @@ func (jp *JavaProcess) SoftFlush() bool {
 		zlog.Errorf(defs.HTTP_TOKEN, "[BUG]soft flush module", "error,resp.Code=%d", resp.Code)
 		return false
 	}
+	zlog.Infof(defs.HTTP_TOKEN, "soft flush module", "success")
 	return true
 }
 
@@ -118,12 +80,12 @@ func (jp *JavaProcess) getToken() (*Response, error) {
 	return HttpPost(jp.httpClient, fmt.Sprintf(loginUrl, jp.ServerIp, jp.ServerPort), params, "")
 }
 
-// GET 请求
+// HttpGet GET 请求
 func HttpGet(httpClient *http.Client, url string, params string, token string) (*Response, error) {
 	return HttpUtil(httpClient, url, params, token, "GET")
 }
 
-// POST请求
+// HttpPost POST请求
 func HttpPost(httpClient *http.Client, url string, params string, token string) (*Response, error) {
 	return HttpUtil(httpClient, url, params, token, "POST")
 }

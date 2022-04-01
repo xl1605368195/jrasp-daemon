@@ -122,7 +122,7 @@ func (this *TxOss) DownLoadModuleFiles() {
 }
 
 func (this *TxOss) downLoad(fileHashMap map[string]string) {
-	for _, m := range this.cfg.ModuleList {
+	for _, m := range this.cfg.ModuleConfigMap {
 		hash, ok := fileHashMap[m.ModuleName]
 		if !ok || hash != m.Md5 {
 			// 下载

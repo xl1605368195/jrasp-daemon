@@ -2,7 +2,6 @@ package userconfig
 
 import (
 	"fmt"
-
 	"github.com/spf13/viper"
 )
 
@@ -17,7 +16,7 @@ const (
 
 type Config struct {
 	// java agent 运行模式
-	AgentMode AgentMode `json:"agentMode"`
+	AgentMode AgentMode `json:"agentMode"`  // 需要显示配置
 
 	// 激活激活时间如: 15:10
 	ActiveTime string `json:"activeTime"`
@@ -44,12 +43,6 @@ type Config struct {
 	HeartBeatReportTicker uint   `json:"heartBeatReportTicker"`
 	DependencyTicker      uint32 `json:"dependencyTicker"`
 
-	// 阻断相关参数的
-	EnableBlock bool `json:"enableBlock"` // 阻断总开关，关闭之后，各个模块都关闭阻断；开启之后，还需要开启模块对应的阻断参数
-	// 命令执行相关参数
-	EnableRceBlock bool     `json:"enableRceBlock"` // rce阻断配置
-	RceWhiteList   []string `json:"rceWhiteList"`   // rce命令执行白名单
-
 	// nacos 配置
 	NamespaceId string   `json:"namespaceId"` // 命名空间
 	DataId      string   `json:"dataId"`      // 配置id
@@ -65,16 +58,17 @@ type Config struct {
 	ExeOssFileHash string `json:"exeOssFileHash"` // 可执行文件的hash
 
 	// module列表
-	ModuleList []Module `json:"moduleList"` // 全部jar包
+	ModuleConfigMap map[string]ModuleConfig `json:"moduleConfigMap"` // 模块配置消息
 }
 
-// module信息
-type Module struct {
-	ModuleName        string `json:"name"`              // 名称，如tomcat.jar
-	DownLoadURL       string `json:"downLoadURL"`       // 下载链接
-	Md5               string `json:"md5"`               // 插件hash
-	MiddlewareVersion string `json:"middlewareVersion"` // 目标中间件版本
-	ClassName         string `json:"className"`         // 目标中间件版本关键类,用来查询jar包版本
+// ModuleConfig module信息
+type ModuleConfig struct {
+	ModuleName  string            `json:"moduleName"`  // 名称，如tomcat.jar
+	RouterPath  string            `json:"routerPath"`  // 参数路由路径
+	ModuleType  string            `json:"moduleType"`  // 模块类型：hook、algorithm
+	DownLoadURL string            `json:"downLoadURL"` // 下载链接
+	Md5         string            `json:"md5"`         // 插件hash
+	Parameters  map[string]string `json:"parameters"`  // 参数列表
 }
 
 func InitConfig() (*Config, error) {
@@ -86,7 +80,7 @@ func InitConfig() (*Config, error) {
 
 	v = viper.New()
 	v.SetConfigName("config") // 文件名称
-	v.SetConfigType("yml")    // 文件类型
+	v.SetConfigType("json")   // 文件类型
 
 	// 安装目录下的cfg
 	v.AddConfigPath("../cfg")
@@ -147,12 +141,12 @@ func setDefaultValue(vp *viper.Viper) {
 	vp.SetDefault("ExecOssFileHash", "")
 }
 
-// IsDynamic 是否是动态注入模式
+// IsDynamicMode IsDynamic 是否是动态注入模式
 func (config *Config) IsDynamicMode() bool {
 	return config.AgentMode == DYNAMIC
 }
 
-// IsNormal 是否是正常模式
+// IsStaticMode IsNormal 是否是正常模式
 func (config *Config) IsStaticMode() bool {
 	return config.AgentMode == STATIC
 }
