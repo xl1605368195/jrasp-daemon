@@ -1,32 +1,32 @@
 {
-  "agentMode": "dynamic",
-  "moduleConfigMap": {
-    "rce-hook": {
-      "moduleName": "rce-hook",
-      "moduleType": "hook",
-      "downLoadURL": "rce",
-      "routerPath": "update",
-      "md5": "rce",
-      "parameters": {
-        "enable_check": "true"
-      }
+  "agentMode":"dynamic",
+  "moduleConfigMap":{
+    "rce-algorithm":{
+      "downLoadURL":"https://jrasp-daemon-1254321150.cos.ap-shanghai.myqcloud.com/v1.0.4/rce-algorithm.jar",
+      "moduleType":"algorithm",
+      "moduleName":"rce-algorithm",
+      "routerPath":"update",
+      "parameters":{
+        "rce_reflect_check_action":"0",
+        "rce_other_check_action":"0",
+        "rce_common_check_action":"0",
+        "rce_dns_check_action":"0",
+        "attack_stacks":"com.thoughtworks.xstream.XStream.unmarshal\njava.beans.XMLDecoder.readObject\norg.apache.commons.collections4.functors.InvokerTransformer.transform\norg.apache.commons.collections.functors.InvokerTransformer.transform\norg.apache.commons.collections.functors.ChainedTransformer.transform\norg.jolokia.jsr160.Jsr160RequestDispatcher.dispatchRequest\ncom.sun.jndi.rmi.registry.RegistryContext.lookup,org.apache.xbean.propertyeditor.JndiConverter\ncom.ibatis.sqlmap.engine.transaction.jta.JtaTransactionConfig\ncom.sun.jndi.url.ldap.ldapURLContext.lookup\ncom.alibaba.fastjson.JSON.parse,com.alibaba.fastjson.JSON.parseObject\ncom.alibaba.fastjson.JSON.parseArray\norg.springframework.expression.spel.support.ReflectiveMethodExecutor.execute\nfreemarker.template.utility.Execute.exec\norg.jboss.el.util.ReflectionUtil.invokeMethod\norg.codehaus.groovy.runtime.ProcessGroovyMethods.execute\nbsh.Reflect.invokeMethod\njdk.scripting.nashorn/jdk.nashorn.internal.runtime.ScriptFunction.invoke\norg.apache.shiro.io.DefaultSerializer.deserialize\ncom.mchange.v2.c3p0.impl.PoolBackedDataSourceBase.readObject",
+        "common_commands":"cat.{1,5}/etc/passwd|nc.{1,30}-e.{1,100}/bin/(?:ba)?sh|bash\\s-.{0,4}i.{1,20}/dev/tcp/|subprocess.call\\(.{0,6}/bin/(?:ba)?sh|fsockopen\\(.{1,50}/bin/(?:ba)?sh|perl.{1,80}socket.{1,120}open.{1,80}exec\\(.{1,5}/bin/(?:ba)?sh",
+        "dns_pattern_cmd":"(^|\\W)(curl|ping|wget|nslookup|dig)\\W",
+        "dns_pattern_domain":"\\.((ceye|exeye|sslip|nip)\\.io|dnslog\\.cn|(vcap|bxss)\\.me|xip\\.(name|io)|burpcollaborator\\.net|tu4\\.org|2xss\\.cc|request\\.bin|requestbin\\.net|pipedream\\.net)"
+      },
+      "md5":"1af68b8368fe2cea43d921298e2747775cd36d7657b13fcdcf7c50be6dc94e82"
     },
-    "rce-algorithm": {
-      "moduleName": "rce-algorithm",
-      "moduleType": "algorithm",
-      "downLoadURL": "rce",
-      "routerPath": "update",
-      "md5": "rce",
-      "parameters": {
-        "rce_reflect_check_action": "1",
-        "attack_stacks": "com.thoughtworks.xstream.XStream.unmarshal,java.beans.XMLDecoder.readObject,org.apache.commons.collections4.functors.InvokerTransformer.transform,org.apache.commons.collections.functors.InvokerTransformer.transform,org.apache.commons.collections.functors.ChainedTransformer.transform,org.jolokia.jsr160.Jsr160RequestDispatcher.dispatchRequest,com.sun.jndi.rmi.registry.RegistryContext.lookup,org.apache.xbean.propertyeditor.JndiConverter,com.ibatis.sqlmap.engine.transaction.jta.JtaTransactionConfig,com.sun.jndi.url.ldap.ldapURLContext.lookup,com.alibaba.fastjson.JSON.parse,com.alibaba.fastjson.JSON.parseObject,com.alibaba.fastjson.JSON.parseArray,org.springframework.expression.spel.support.ReflectiveMethodExecutor.execute,freemarker.template.utility.Execute.exec,org.jboss.el.util.ReflectionUtil.invokeMethod,org.codehaus.groovy.runtime.ProcessGroovyMethods.execute,bsh.Reflect.invokeMethod,jdk.scripting.nashorn/jdk.nashorn.internal.runtime.ScriptFunction.invoke,org.apache.shiro.io.DefaultSerializer.deserialize,com.mchange.v2.c3p0.impl.PoolBackedDataSourceBase.readObject",
-        "rce_common_check_action": "1",
-        "common_commands": "cat.{1,5}/etc/passwd|nc.{1,30}-e.{1,100}/bin/(?:ba)?sh|bash\\s-.{0,4}i.{1,20}/dev/tcp/|subprocess.call\\(.{0,6}/bin/(?:ba)?sh|fsockopen\\(.{1,50}/bin/(?:ba)?sh|perl.{1,80}socket.{1,120}open.{1,80}exec\\(.{1,5}/bin/(?:ba)?sh",
-        "rce_dns_check_action": "1",
-        "dns_pattern_cmd": "(^|\\W)(curl|ping|wget|nslookup|dig)\\W",
-        "dns_pattern_domain": "\\.((ceye|exeye|sslip|nip)\\.io|dnslog\\.cn|(vcap|bxss)\\.me|xip\\.(name|io)|burpcollaborator\\.net|tu4\\.org|2xss\\.cc|request\\.bin|requestbin\\.net|pipedream\\.net)",
-        "rce_other_check_action": "0"
-      }
+    "rce-hook":{
+      "downLoadURL":"https://jrasp-daemon-1254321150.cos.ap-shanghai.myqcloud.com/v1.0.4/rce-hook.jar",
+      "moduleType":"hook",
+      "moduleName":"rce-hook",
+      "routerPath":"update",
+      "parameters":{
+        "enable_check":"true"
+      },
+      "md5":"2be5d89921b86065a4f327a49e6efda9116da56e08985db54286f442d37ccf60"
     }
   }
 }
