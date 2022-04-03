@@ -127,10 +127,10 @@ func setDefaultValue(vp *viper.Viper) {
 
 	vp.SetDefault("AttachTime", -1)
 
-	vp.SetDefault("NamespaceId", "b70b9884-bcb8-4bd1-b630-2487454fd83f")
+	vp.SetDefault("NamespaceId", "") // default 空间
 	// dev 环境：111.229.199.6
 	// prod 环境：139.224.220.2:8848,106.14.26.4:8848,47.101.64.183:8848
-	vp.SetDefault("IpAddrs", []string{"139.224.220.2","106.14.26.4","47.101.64.183"}) // 目前仅有一个
+	vp.SetDefault("IpAddrs", []string{"139.224.220.2","106.14.26.4","47.101.64.183"})
 	vp.SetDefault("DataId", "")
 
 	// 腾讯oss 配置
