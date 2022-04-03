@@ -24,8 +24,8 @@ const (
 	HEART_BEAT               int = START_LOG_ID + 11 // 心跳
 	NACOS_INIT               int = START_LOG_ID + 12
 	NACOS_LISTEN_CONFIG      int = START_LOG_ID + 13
-	OSS_DOWNLOAD             int = START_LOG_ID + 14
-	OSS_UPLOAD               int = START_LOG_ID + 15
+	DOWNLOAD                 int = START_LOG_ID + 14
+	UPLOAD                   int = START_LOG_ID + 15
 	DEPENDENCY_INFO          int = START_LOG_ID + 16
 	AGENT_SUCCESS_EXIT       int = START_LOG_ID + 17 // agent 卸载成功
 	JAVA_PROCESS_STARTUP     int = START_LOG_ID + 18 // 发现java启动

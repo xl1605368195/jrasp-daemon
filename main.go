@@ -5,7 +5,7 @@ import (
 	"jrasp-daemon/defs"
 	"jrasp-daemon/environ"
 	"jrasp-daemon/nacos"
-	"jrasp-daemon/oss"
+	"jrasp-daemon/update"
 	"jrasp-daemon/userconfig"
 	"jrasp-daemon/utils"
 	"jrasp-daemon/watch"
@@ -58,8 +58,8 @@ func main() {
 	// 配置客户端初始化
 	nacos.NacosInit(conf, env)
 
-	// OSS 客户端初始化和可执行文件下载
-	ossClient := oss.NewTxOssClient(conf, env)
+	// 可执行文件下载
+	ossClient := update.NewUpdateClient(conf, env)
 
 	// 下载最新的可执行文件
 	ossClient.UpdateDaemonFile()

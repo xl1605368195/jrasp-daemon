@@ -48,11 +48,6 @@ type Config struct {
 	DataId      string   `json:"dataId"`      // 配置id
 	IpAddrs     []string `json:"ipAddrs"`     // nacos 服务端ip列表
 
-	// oss 配置
-	BucketURLStr string `json:"bucketURLStr"`
-	SecretID     string `json:"secretID"`
-	SecretKey    string `json:"secretKey"`
-
 	// jrasp-daemon 自身配置
 	ExeOssFileName string `json:"exeOssFileName"` // 相对于bucketURLStr的路径
 	ExeOssFileHash string `json:"exeOssFileHash"` // 可执行文件的hash
@@ -134,10 +129,6 @@ func setDefaultValue(vp *viper.Viper) {
 	vp.SetDefault("DataId", "")
 
 	// 腾讯oss 配置
-	vp.SetDefault("BucketURLStr", "")
-	vp.SetDefault("SecretID", "")
-	vp.SetDefault("SecretKey", "")
-
 	// 可执行文件配置,默认为空，不需要更新
 	vp.SetDefault("ExecOssFileName", "")
 	vp.SetDefault("ExecOssFileHash", "")

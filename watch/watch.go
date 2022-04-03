@@ -1,6 +1,7 @@
 package watch
 
 import (
+	"fmt"
 	"jrasp-daemon/defs"
 	"jrasp-daemon/environ"
 	"jrasp-daemon/java_process"
@@ -8,6 +9,7 @@ import (
 	"jrasp-daemon/utils"
 	"jrasp-daemon/zlog"
 	"os"
+	"path/filepath"
 	"strings"
 	"sync"
 	"time"
@@ -100,8 +102,11 @@ func (w *Watch) DoAttach() {
 
 				// 模块参数更新
 				if javaProcess.NeedUpdateParameters {
+					success := javaProcess.UpdateParameters()
+					if !success {
+						zlog.Errorf(defs.WATCH_DEFAULT, "[BUG] update parameters error", "java process[%d]", javaProcess.JavaPid)
+					}
 					javaProcess.NeedUpdateParameters = false
-					javaProcess.UpdateParameters()
 				}
 				return true // continue
 			})
@@ -232,6 +237,12 @@ func (w *Watch) checkExisted(pid interface{}) bool {
 	if err != nil || !exists {
 		// 出错或者不存在时，删除
 		w.ProcessSyncMap.Delete(pid)
+		// 删除文件
+		err := os.Remove(filepath.Join(w.env.InstallDir, "run", fmt.Sprintf("%d", pid)))
+		if err != nil {
+			zlog.Errorf(defs.JAVA_PROCESS_SHUTDOWN, "[ScanProcess]", "delet run/pid[%d] file errpr:%v", pid, err)
+			return true
+		}
 		zlog.Infof(defs.JAVA_PROCESS_SHUTDOWN, "[ScanProcess]", "%d", pid)
 		return true // continue
 	}

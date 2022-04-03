@@ -43,16 +43,16 @@ func (jp *JavaProcess) ExitInjectImmediately() bool {
 func (jp *JavaProcess) ShutDownAgent() bool {
 	token, err := jp.getToken()
 	if err != nil {
-		zlog.Errorf(defs.HTTP_TOKEN, "shut down agent", "get http token err:%v", err)
+		zlog.Errorf(defs.HTTP_TOKEN, "shutdown java agent", "get http token err:%v", err)
 		return false
 	}
 	resp, err := HttpGet(jp.httpClient, fmt.Sprintf(shutdownUrl, jp.ServerIp, jp.ServerPort), "", token.Data)
 	if err != nil {
-		zlog.Errorf(defs.HTTP_TOKEN, "shut down agent", "send shutdown request error:%v", err)
+		zlog.Errorf(defs.HTTP_TOKEN, "shutdown java agent", "send shutdown request error:%v", err)
 		return false
 	}
 	if resp.Code != 200 {
-		zlog.Errorf(defs.HTTP_TOKEN, "shut down agent", "send shutdown request error,resp.Code=%d", resp.Code)
+		zlog.Errorf(defs.HTTP_TOKEN, "shutdown java agent", "send shutdown request error,resp.Code=%d", resp.Code)
 		return false
 	}
 	return true

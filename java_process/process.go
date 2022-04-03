@@ -202,17 +202,24 @@ func (jp *JavaProcess) ReadTokenFile() bool {
 
 // UpdateParameters 更新模块参数
 func (jp *JavaProcess) UpdateParameters() bool {
-	response, _ := jp.getToken()
+	response, error := jp.getToken()
+	if error != nil {
+		return false
+	}
 	apiUrl := fmt.Sprintf(BASE_URL, jp.ServerIp, jp.ServerPort)
 	u, _ := url.ParseRequestURI(apiUrl)
 	client := &http.Client{}
 	for _, v := range jp.ModuleConfigMap {
 		// 拼接路径
-		resource := fmt.Sprintf("/%s/%s/%s", "jrasp",v.ModuleName, v.RouterPath)
+		resource := fmt.Sprintf("/%s/%s/%s", "jrasp", v.ModuleName, v.RouterPath)
 		u.Path = resource
 		urlStr := u.String()
 		data := url.Values{}
 		// 拼接参数
+		if v.Parameters == nil {
+			// 参数列表为空，无需更新
+			continue
+		}
 		for key, value := range v.Parameters {
 			data.Set(key, value)
 		}
