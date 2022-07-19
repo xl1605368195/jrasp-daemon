@@ -61,3 +61,6 @@ cat ./logs/jrasp-daemon.log
 ### 整体框架使用字节跳动 `HIDS`
 
 对于上面的开源项目，再此一并表示感谢
+
+## 版权信息
+GPL3.0
